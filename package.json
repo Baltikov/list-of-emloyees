@@ -1,9 +1,10 @@
 {
   "name": "webserver",
   "version": "1.0.0",
-  "description": "geekbrains legendary-eureka webserver",
+  "description": "geekbrains list-of-emloyees webserver",
   "main": "server.js",
   "scripts": {
+    "type": "module",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
     "build": "webpack",
@@ -11,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Tasha-Ball/legendary-eureka.git"
+    "url": "git+https://github.com/Tasha-Ball/list-of-emloyees.git"
   },
   "author": "baltikova",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Tasha-Ball/legendary-eureka/issues"
+    "url": "https://github.com/Tasha-Ball/list-of-emloyees/issues"
   },
-  "homepage": "https://github.com/Tasha-Ball/legendary-eureka#readme",
+  "homepage": "https://github.com/Tasha-Ball/list-of-emloyees#readme",
   "devDependencies": {
     "webpack": "^5.25.0",
     "webpack-cli": "^4.5.0",
@@ -27,11 +28,13 @@
   "dependencies": {
     "@babel/core": "^7.13.10",
     "@babel/plugin-proposal-class-properties": "^7.13.0",
+    "axios": "^0.21.1",
     "babel": "^6.23.0",
     "babel-loader": "^8.2.2",
     "body-parser": "^1.19.0",
     "css-loader": "^5.1.2",
     "express": "^4.17.1",
+    "firebase": "^8.7.0",
     "node-sass": "^5.0.0",
     "sass-loader": "^11.0.1",
     "style-loader": "^2.0.0",

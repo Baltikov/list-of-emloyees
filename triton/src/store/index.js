@@ -1,113 +1,71 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
+import firebase from 'firebase/app'
+import 'firebase/storage'
+import 'firebase/database'
 
-Vue.use(Vuex);  //получаем доступ к хранилищу, чтобы мы могли обращаться к нему
+const firebaseConfig = {
+    apiKey: "AIzaSyAatgzNyO0P3WiZgcLzpBTztWd2EGvqPEc",
+    authDomain: "content-upload-2ae8b.firebaseapp.com",
+    projectId: "content-upload-2ae8b",
+    storageBucket: "content-upload-2ae8b.appspot.com",
+    messagingSenderId: "140695409361",
+    appId: "1:140695409361:web:9bc10aff664acade382bf0"
+}
 
-export default new Vuex.Store({
+firebase.initializeApp(firebaseConfig)
+
+const storage = firebase.storage()
+
+const storageRef = storage.ref();
+
+Vue.use(Vuex);
+
+const store = new Vuex.Store({
     state: {
         data: {},
-        itemsOnPage: [],
-        itemsInCart: [],
-        cart: {},
-        img: {}
+        itemsOnPage: []
     },
     mutations: {
-        // каталог товаров
+        // список сотрудников
         setData (state, payload) {
             state.data = { ...state.data, ...payload.newData };
             state.itemsOnPage.push(...Object.keys(payload.newData))
-        },  
-        // добавить в корзину
-        setCart (state, id) {
-            if (state.cart[id]) {
-                state.cart[id].quantity++;
-            } else {
-                state.cart[id] = state.data[id];
-                Vue.set(state.cart[id], 'quantity', 1);
-                state.itemsInCart.push(id);
-            };
-        },
-        // удалить товар из корзины
-        removeFromCart (state, index) {
-            let id = state.itemsInCart[index];
-            delete state.cart[id];
-            state.itemsInCart.splice(index, 1);
-        },
-        // увеличить количество товара в корзине
-        enlarge (state, index) {
-            state.cart[index].quantity++;
-        },
-        // уменьшить количество товара в корзине
-        reduce (state, index) {
-            if (state.cart[index].quantity > 1) {
-                state.cart[index].quantity--;
-            }
         }
-
     },
     getters: {
         getData: state => state.data,
-        getItemsOnPage: state => state.itemsOnPage,
-        getCart: state => state.cart,
-        getItemsInCart: state => state.itemsInCart,
+        getItemsOnPage: state => state.itemsOnPage
     },
     actions: {
         // получить данные с сервера
-        requestData ({ commit }, page) {
-            fetch(`/itemslist/${page}`, {
-                method: 'GET',
-            })
-            .then(res => {
-                return res.json();
-            })
-            .then(res => {
-                commit('setData', { newData: res });
-            })
-            .catch((err) => {
-                alert('No more pages!')
-            });
+        async requestData({commit}) {
+            try {
+                const info = (await firebase.database().ref('/data').once('value')).val()
+                commit('setData', { newData: info })
+            } catch (e) {
+                console.log(e)
+            }
         },
-        // добавить в корзину
-        addToCart ({commit}, id) {
-            commit('setCart', id);
+        // добавить нового сотрудника
+        loadEmployee ({commit}, data) {
+            try {
+                const info = firebase.database().ref('/data')
+                info.push(data)
+                commit('setData', { newData: data })
+                alert('Сотрудник добавлен')
+            } catch (e) {
+                console.log(e)
+            }
         },
-        // заказать товар (список товаров записываем в cart.json)
-        sendOrder ({}, data) {
-            fetch ('/cartlist', {
-                method: 'POST',
-                body: JSON.stringify(data),
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+        // загрузить изображение
+        onUpload({commit}, files) {
+            files.forEach(file => {
+                const ref = storage.ref(`img/${file.name}`)
+                ref.put(file)
             })
-        },
-        // добавить новый товар (действие совершает администратор)
-        loadItem ({commit}, data) {
-            fetch ('/itemslist', {
-                method: 'POST',
-                body: JSON.stringify(data),
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-            })
-            .then(res => {
-                return res.json();
-            })
-            .then(res => {
-                commit('setData', { newData: res });
-            });
-        },
-        // удалить товар из корзины
-        deleteFromCart ({commit}, index) {
-            commit('removeFromCart', index)
-        },
-        // увеличить количество товара в корзине
-        enlargeNumber ({commit}, index) {
-            commit('enlarge', index)
-        },
-        // уменьшить количество товара в корзине
-        reduceNumber ({commit}, index) {
-            commit('reduce', index)
         }
-    },
-});
+    }
+})
+
+export default store

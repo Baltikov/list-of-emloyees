@@ -1,67 +1,71 @@
 <template>
     <div>
-        <Top :msg="'КАТАЛОГ ТОВАРОВ'" />
-        <div class="products center">
-            <div class="feature_items">
+        <Top :msg="'СПИСОК СОТРУДНИКОВ'" />
+        <div class="content center">
+            <div class="content__list">
                 <Item
-                    v-for="id in getItemsOnPage"
+                    v-for="id in paginatedUsers"
                     :id="id"
                     :key="id"
-                    @addItemToCart="addItemToCart(id)"
                 />
             </div>
-            <Button @clicked="click" :class="[$style.mb]">
-                Показать еще
-            </Button>
+        </div>
+        <div class="pages center">
+            <div
+            v-for="page in pages"
+            :key="page"
+            class="pages__number"
+            :class="{'pages__number_selected': page === pageNumber}"
+            @click="pageClick(page)">
+                {{ page }}
+            </div>
         </div>
     </div>
 </template>
 
 <script>
-import { mapMutations, mapGetters, mapActions} from 'vuex'
+import { mapGetters, mapActions} from 'vuex'
 import Item from './Item.vue'
-import Button from './Button.vue'
 import Top from './Top.vue'
 
 export default {
     data () {
         return {
-            page: 1,
+            usersPerPage: 16,
+            pageNumber: 1
         }
     },
     components: {
         Item,
-        Button,
         Top
     },
     methods: {
         ...mapActions([
-            'requestData',
-            'addToCart'
+            'requestData'
         ]),
-        click () {
-            this.page++
-            this.requestData(this.page)
-        },
-        addItemToCart (id) {
-            this.addToCart(id)
+        pageClick(page) {
+            this.pageNumber = page
         }
     },
     computed: {
         ...mapGetters([
-            'getItemsOnPage',
-            'getFullPrice',
-            'getData'
-        ])
+            'getItemsOnPage'
+        ]),
+        pages() {
+            return Math.ceil(this.getItemsOnPage.length / this.usersPerPage)
+        },
+        paginatedUsers() {
+            let from = (this.pageNumber - 1) * this.usersPerPage;
+            let to = from + this.usersPerPage;
+            return this.getItemsOnPage.slice(from, to)
+        }
     },
     created () {
-        this.requestData(this.page)
+        this.requestData()
     },
 }
 </script>
 
 <style module>
-    .mb {
-        margin-bottom: 50px;
-    }
+
 </style>
